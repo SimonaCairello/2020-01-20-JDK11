@@ -1,8 +1,11 @@
 package it.polito.tdp.artsmia;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.artsmia.db.CoppiaArtisti;
+import it.polito.tdp.artsmia.model.Artist;
 import it.polito.tdp.artsmia.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,7 +16,7 @@ import javafx.scene.control.TextField;
 
 public class ArtsmiaController {
 	
-	private Model model ;
+	private Model model;
 
     @FXML
     private ResourceBundle resources;
@@ -31,7 +34,7 @@ public class ArtsmiaController {
     private Button btnCalcolaPercorso;
 
     @FXML
-    private ComboBox<?> boxRuolo;
+    private ComboBox<String> boxRuolo;
 
     @FXML
     private TextField txtArtista;
@@ -42,23 +45,56 @@ public class ArtsmiaController {
     @FXML
     void doArtistiConnessi(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Calcola artisti connessi");
+    	List<CoppiaArtisti> coppie = this.model.getElencoCoppie();
+    	
+    	for(CoppiaArtisti c : coppie) {
+    		txtResult.appendText(c.toString()+"\n");
+    	}
     }
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Calcola percorso");
+    	int i = 0;
+    	
+    	try {
+    		i = Integer.parseInt(txtArtista.getText());
+    	} catch (NumberFormatException e) {
+    		txtResult.appendText("Devi inserire un numero intero valido!");
+    		return;
+    	}
+    	
+    	List<Artist> artisti = this.model.getCamminoMax(i);
+    	double d = 0;
+    	
+    	for(Artist a : artisti)
+    		txtResult.appendText(a.toString()+"\n");
+    	
+    	d = this.model.getPesoArco(artisti.get(0), artisti.get(1));
+    	
+    	txtResult.appendText("Il numero di esposizioni per cui il percorso risulta massimo è: "+d);
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Crea grafo");
+    	
+    	String s = boxRuolo.getValue();
+    	if(s==null) {
+    		txtResult.appendText("Seleziona un ruolo!\n");
+    		return;
+    	}
+    	
+    	this.model.generateGraph(s);
+    	txtResult.appendText("Il grafo è stato creato!\n");
+    	//txtResult.appendText(""+model.getNumVertici()+" ");
+    	//txtResult.appendText(""+model.getNumArchi());
     }
 
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	this.boxRuolo.getItems().setAll(this.model.listRoles());
     }
 
     
